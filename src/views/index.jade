@@ -1,0 +1,11 @@
+extends ./layout.jade
+block content
+
+    .container
+      for project in projects
+        .photo(id='#{project.projectId}')
+          a(href='/project/#{project.projectId}')
+            img(src='#{project.image}', alt='#{project.description}')
+            .photo-overlay 
+              h3 #{project.title}
+              p #{project.description}

@@ -1,0 +1,15 @@
+extends ./layout.jade
+block content
+
+    .container
+      .description
+        h3 #{project.title}
+        p
+          |#{project.description}.
+          |Authors: #{project.authors}
+          
+      for image in images
+        .photo
+          a(href='#{image.image}', data-lity='')
+            img(src='#{image.image}', alt='#{project.description}')
+          

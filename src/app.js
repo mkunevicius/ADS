@@ -3,6 +3,8 @@
 var express = require('express');
 var mysql = require ('mysql');
 var app = express();
+var bodyParser = require('body-parser');
+
 var connection = mysql.createConnection({
   host     : 'localhost',
 	port		 : '8889',
@@ -12,8 +14,13 @@ var connection = mysql.createConnection({
 
 connection.query('USE ADS');
 
+// Static server
 app.use('/static', express.static(__dirname + '/public'));
 
+// Use body-parser - Express middleware for routs to access req.body
+app.use(bodyParser.urlencoded({extended : false}));
+
+// Set view engine to Jade
 app.set('view engine', 'jade');
 app.set('views', __dirname + '/views');
 
@@ -73,7 +80,55 @@ app.get('/contact', function(req, res){
 	res.render("contact");
 });
 
-// Server running
+// API projectlist route
+app.get('/api/projects', function(req, res){
+  showAllProjects(res);
+});
+
+// API newproject form route
+app.get('/api/projects/new', function(req, res){
+  connection.query('SELECT * FROM categories', function(err, rows){
+    res.render('admin/projectForm', {categories : rows});
+  });
+});
+
+// API newproject submit route
+app.post('/api/projects', function(req, res){
+  console.log(req.body);
+  var query = 'INSERT INTO projects (title, description, authors) VALUES (?, ?, ?)';
+  connection.query(query, [req.body.title, req.body.description, req.body.authors], function(err, rows){
+    if (err) throw err;
+    console.log(rows);
+    connection.query('INSERT INTO projects_to_categories (projectId, categoryId) VALUES (?, ?)', [rows.insertId, req.body.categoryId], function(err, rows){
+      if (err) throw err;
+      console.log(rows);
+    });
+  });
+  showAllProjects(res);
+});
+
+// Populate all projects function
+function showAllProjects(res) {
+  connection.query('SELECT *, projects.id AS projectId FROM projects JOIN images ON projects.id = images.projectId WHERE main = 1', function(err, rows){
+    res.render('admin/projectList', {projects : rows});
+  });
+}
+
+function editProject(){
+  var query = '';
+}
+
+function deleteProject(){
+  var query = '';
+}
+
+
+
+
+
+
+
+// Server run
 app.listen(3000, function(){
 	console.log("The frontend server is running on port 3000...");
 });

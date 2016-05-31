@@ -1,0 +1,35 @@
+extends ../layout.jade
+block content
+    
+    form.form(action='/api/projects', method='post', enctype="multipart/form-data")
+      
+      h1 ADD/EDIT PROJECT
+      
+      fieldset
+      
+        label(for='name') Project title:
+        input(type='text' id='name' name='title')
+        
+        label(for='description') Description:
+        input(type='text' id='description' name='description')
+        
+        label(for='authors') Authors:
+        input(type='text' id='authors' name='authors')
+        
+        label(for='category') Category:
+        select(name='categoryId')
+          for category in categories
+            option(value='#{category.id}') #{category.name}  
+      
+      fieldset
+      
+        label(for='image') Images:
+        input(type='file' id='image' name='displayImage')
+        input(type='file' id='image' name='displayImage')
+        input(type='file' id='image' name='displayImage')
+        input(type='file' id='image' name='displayImage')
+        input(type='file' id='image' name='displayImage')
+        input(type='file' id='image' name='displayImage')
+      
+      button.addNew(type='submit') OK
+    

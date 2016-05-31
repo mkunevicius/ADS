@@ -261,6 +261,43 @@ footer p {
   border-radius: .5em;
 }
 
+
+/*-------------------------------- ADMIN */
+
+.addNew {
+  padding: 10px;
+  margin: 0 5%;
+  width: 200px;
+  color: #fff;
+  background-color: #222;
+  border: none;
+}
+
+.edit,
+.delete {
+  margin-top: 5px;
+  width: 80px;
+}
+
+.form {
+  margin-top: 50px;
+}
+
+.form input,
+.form select,
+.form button,
+.form label,
+.form h1 {
+  display: block;
+  width: 700px;
+  margin: 10px 20%;
+}
+
+fieldset {
+  border: none;
+  margin-bottom: 30px;
+}
+
 /*-------------------------------- RESPONSIVE */
 
 @media (max-width: 560px) {

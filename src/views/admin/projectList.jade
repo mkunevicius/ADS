@@ -10,5 +10,5 @@ block content
           img(src='#{project.image}', alt='#{project.description}')
           .photo-overlay 
             h3 #{project.title}
-            button.edit Edit
-            button.delete Delete
+            a.edit(href='/api/projects/edit/#{project.projectId}') Edit
+            a.delete(href='#' onclick="confirmDelete(#{project.projectId})") Delete

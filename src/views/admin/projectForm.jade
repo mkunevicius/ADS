@@ -1,35 +1,44 @@
 extends ../layout.jade
 block content
-    
-    form.form(action='/api/projects', method='post', enctype="multipart/form-data")
+
+    - var actionValue = ''
+    - var methodValue = ''
+    if (project.title)
+      - actionValue = '/api/projects/#{project.id}'
+      - methodValue = 'put'
+    else
+      - actionValue = '/api/projects'
+      - methodValue = 'post'
+
+    form.form(action='#{actionValue}', method='#{methodValue}', enctype="multipart/form-data")
       
       h1 ADD/EDIT PROJECT
       
       fieldset
       
         label(for='name') Project title:
-        input(type='text' id='name' name='title')
+        input(type='text' id='name' name='title' value=(project.title ? project.title : ''))
         
         label(for='description') Description:
-        input(type='text' id='description' name='description')
+        input(type='text' id='description' name='description' value=(project.description ? project.description : ''))
         
         label(for='authors') Authors:
-        input(type='text' id='authors' name='authors')
+        input(type='text' id='authors' name='authors' value=(project.authors ? project.authors : ''))
         
         label(for='category') Category:
         select(name='categoryId')
           for category in categories
-            option(value='#{category.id}') #{category.name}  
-      
+            - if (category.id === project.categoryId)  
+              option(value='#{category.id}' selected) #{category.name}  
+            - else 
+              option(value='#{category.id}') #{category.name}  
+
       fieldset
       
-        label(for='image') Images:
-        input(type='file' id='image' name='displayImage')
-        input(type='file' id='image' name='displayImage')
-        input(type='file' id='image' name='displayImage')
-        input(type='file' id='image' name='displayImage')
-        input(type='file' id='image' name='displayImage')
-        input(type='file' id='image' name='displayImage')
+        label Images:
+        input(type='file' name='image' multiple)
       
-      button.addNew(type='submit') OK
+      button.addNew(type='submit' name='submit') OK
+      
+      
     

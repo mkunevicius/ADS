@@ -62,3 +62,12 @@ switch(window.location.pathname) {
     document.getElementById("contact").classList.add("selected");
     break;
 }
+
+
+// 5
+// Prompt for delete
+function confirmDelete(id){
+  if (window.confirm("Are you sure You want to delete this project?")) {
+    window.location.href = window.location+'/delete/'+id;
+  }
+}

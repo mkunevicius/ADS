@@ -91,15 +91,17 @@ app.get('/contact', function(req, res){
 	res.render("contact");
 });
 
+//Accessing the restricted API routes
+app.all('/api', function(req, res, next){
+  console.log('Accessing admin area...');
+  next(); //pass control to the next handler
+
+});
+
 // API projectlist route
 app.get('/api/projects', function(req, res){
   showAllProjects(res);
 });
-
-
-
-
-
 
 // API newproject form route
 app.get('/api/projects/new', function(req, res){
@@ -111,12 +113,19 @@ app.get('/api/projects/new', function(req, res){
 // API editproject form route
 app.get('/api/projects/edit/:id', function(req, res){
   var id = req.params.id;
-
-  connection.query('SELECT * FROM projects JOIN projects_to_categories ON projects.id = projects_to_categories.projectId WHERE projects.id = ?', [id], function(err, projectRows) {
-
-    connection.query('SELECT * FROM categories', function(err, rows){
-      res.render('admin/projectForm', {project : projectRows[0], categories : rows });
+  function getProject(id, callback){
+    var queryProject = 'SELECT * FROM projects JOIN projects_to_categories ON projects.id = projects_to_categories.projectId WHERE projects.id = ?';
+    var queryCategory = 'SELECT * FROM categories';
+      connection.query(queryProject, [id], function(err, projectRows) {
+        connection.query(queryCategory, function(err, categoryRows) {
+          connection.query('SELECT image FROM images WHERE images.projectId = ?', [id], function(err, imageRows){
+          callback(projectRows[0], categoryRows, imageRows);
+        });
+      });
     });
+  }
+  getProject(id, function(project, categories, images){
+    res.render('admin/projectForm', {project : project, categories : categories, images: images});
   });
 });
 
@@ -124,14 +133,12 @@ app.get('/api/projects/edit/:id', function(req, res){
 app.post('/api/projects', upload.array('image', 6), function(req, res){
   console.log('body: ', req.body);
   console.log('files: ',req.files);
-
   var queryProject = 'INSERT INTO projects (title, description, authors) VALUES (?, ?, ?)';
   var queryCategory = 'INSERT INTO projects_to_categories (projectId, categoryId) VALUES (?, ?)';
   var queryImages = 'INSERT INTO images (projectId, image, main) VALUES (?, ?, ?)';
   // Insert project into projects table
   connection.query(queryProject, [req.body.title, req.body.description, req.body.authors], function(err, rows){
     if (err) throw err;
-
     var projectId = rows.insertId;
     // Insert project category into projects_to_categories table
     connection.query(queryCategory, [projectId, req.body.categoryId], function(err, rows){
@@ -149,20 +156,19 @@ app.post('/api/projects', upload.array('image', 6), function(req, res){
 });
 
 // API editproject submit route
-app.put('/api/projects', upload.array('image', 6), function(req, res){
+app.post('/api/projects/edit/:id', upload.array('image', 6), function(req, res){
+  var id = req.params.id;
   console.log('body: ', req.body);
   console.log('files: ',req.files);
-
   var queryProject = 'UPDATE ADS.projects SET title = ?, description = ?, authors = ? WHERE projects.id = ?';
   var queryCategory = 'UPDATE ADS.projects_to_categories SET categoryId = ? WHERE projectId = ?';
   var queryImages = 'UPDATE ADS.images SET image = ?, main = ? WHERE rojectId = ?';
-
   // Update project
-  connection.query(queryProject, [req.body.title, req.body.description, req.body.authors, req.body.id], function(err, rows){
+  connection.query(queryProject, [req.body.title, req.body.description, req.body.authors, id], function(err, rows){
     if (err) throw err;
     var projectId = rows.insertId;
     // Update project category
-    connection.query(queryCategory, [req.body.categoryId, req.body.id], function(err, rows){
+    connection.query(queryCategory, [req.body.categoryId, id], function(err, rows){
       if (err) throw err;
       // Update project images
       req.files.forEach((file, index) => {
@@ -176,10 +182,6 @@ app.put('/api/projects', upload.array('image', 6), function(req, res){
   res.redirect('/api/projects');
 });
 
-
-
-
-
 // API delete project route
 app.get('/api/projects/delete/:id', function(req, res){
   var id = req.params.id;
@@ -190,7 +192,7 @@ app.get('/api/projects/delete/:id', function(req, res){
   res.redirect('/api/projects');
 });
 
-// Show all projects
+
 function showAllProjects(res) {
   var queryAllProjects = 'SELECT *, projects.id AS projectId FROM projects JOIN images ON projects.id = images.projectId WHERE main = 1';
   connection.query(queryAllProjects, function(err, rows){

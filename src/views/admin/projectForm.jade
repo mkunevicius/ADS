@@ -1,23 +1,16 @@
-extends ../layout.jade
+extends ../admin/layoutAdmin.jade
 block content
 
-    - var actionValue = ''
-    - var methodValue = ''
-    if (project.title)
-      - actionValue = '/api/projects/#{project.id}'
-      - methodValue = 'put'
-    else
-      - actionValue = '/api/projects'
-      - methodValue = 'post'
-
-    form.form(action='#{actionValue}', method='#{methodValue}', enctype="multipart/form-data")
+    a.addNew(href='/api/projects') Back to Projects
+    
+    form.form(method='post' enctype="multipart/form-data" action=(project.title ? '/api/projects/edit/#{project.projectId}' : '/api/projects'))
       
       h1 ADD/EDIT PROJECT
       
       fieldset
       
-        label(for='name') Project title:
-        input(type='text' id='name' name='title' value=(project.title ? project.title : ''))
+        label(for='title') Project title:
+        input(type='text' id='title' name='title' value=(project.title ? project.title : ''))
         
         label(for='description') Description:
         input(type='text' id='description' name='description' value=(project.description ? project.description : ''))
@@ -32,13 +25,21 @@ block content
               option(value='#{category.id}' selected) #{category.name}  
             - else 
               option(value='#{category.id}') #{category.name}  
-
+      
+      - if (images)
+        .container
+          for image in images
+            .photo 
+              img(src='#{image.image}')
+              .photo-overlay 
+                p #{image.image}
+                a.delete(href='' onclick='') Delete
+              
       fieldset
       
-        label Images:
+        label Add images:
         input(type='file' name='image' multiple)
       
-      button.addNew(type='submit' name='submit') OK
+      button.addNew(type='submit' name='submit' onclick='ifEmpty()') OK
       
       
-    

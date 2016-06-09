@@ -65,9 +65,23 @@ switch(window.location.pathname) {
 
 
 // 5
-// Prompt for delete
-function confirmDelete(id){
-  if (window.confirm("Are you sure You want to delete this project?")) {
+// Prompt for delete project
+function confirmDelete(id) {
+  if (window.confirm("Delete this project?")) {
     window.location.href = window.location+'/delete/'+id;
   }
+}
+
+
+// 6
+// Check if input fields aren't empty when adding new project
+function ifEmpty() {
+  var form = document.querySelector("form");
+  form.addEventListener("submit", function(event) {
+    var fields = document.getElementById('title');
+    if (fields.value === '') {
+      event.preventDefault();
+      alert('Please enter the project title');
+    }
+  });
 }

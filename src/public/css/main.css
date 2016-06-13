@@ -301,6 +301,14 @@ fieldset {
   margin-bottom: 30px;
 }
 
+.login {
+  display: block;
+  width: 160px;
+  margin: 10px 5%;
+  padding: 5px 0;
+}
+
+
 /*-------------------------------- RESPONSIVE */
 
 @media (max-width: 560px) {

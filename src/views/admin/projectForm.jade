@@ -2,7 +2,9 @@ extends ../admin/layoutAdmin.jade
 block content
 
     a.addNew(href='/api/projects') Back to Projects
-    
+    span.loggedin Logged in: #{username}
+    a.addNew(href='/logout') Log Out
+  
     form.form(method='post' enctype="multipart/form-data" action=(project.title ? '/api/projects/edit/#{project.projectId}' : '/api/projects'))
       
       h1 ADD/EDIT PROJECT

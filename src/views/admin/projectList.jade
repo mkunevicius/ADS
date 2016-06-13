@@ -1,8 +1,9 @@
 extends ../admin/layoutAdmin.jade
 block content
     
-    
     a.addNew(href='/api/projects/new') Add New Project
+    span.loggedin Logged in: #{username}
+    a.addNew(href='/logout') Log Out
     .container
       for project in projects
         .photo(id='#{project.projectId}')

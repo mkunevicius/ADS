@@ -1,0 +1,10 @@
+extends ../admin/layoutAdmin.jade
+block content
+
+    form(method='post' action='/login')
+      
+      input.login(type='username' name='username' placeholder='Username')
+      
+      input.login(type='password' name='password' placeholder='Password')
+      
+      button.addNew(type='submit' name='login') Login

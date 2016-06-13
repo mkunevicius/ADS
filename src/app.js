@@ -2,9 +2,14 @@
 
 var express = require('express');
 var mysql = require ('mysql');
-var app = express();
 var bodyParser = require('body-parser');
 var multer = require('multer');
+var bcrypt = require('bcrypt');
+var cookieParser = require('cookie-parser');
+var session = require('express-session');
+var router = require('./router');
+
+var app = express();
 
 var storage = multer.diskStorage({
   destination: function (req, file, callback) {
@@ -29,13 +34,28 @@ connection.query('USE ADS');
 
 // Static server
 app.use('/static', express.static(__dirname + '/public'));
-
-// Use body-parser - Express middleware for routs to access req.body
+// Use body-parser - Express middleware for routes to access req.body
 app.use(bodyParser.urlencoded({extended : false}));
+// Cookie parser
+app.use(cookieParser('shhhh, very secret'));
+// Backend session
+app.use(session());
+// Get username from session
+app.use(function(req, res, next) {
+  if (req.session.user) res.locals.username = req.session.user.username;
+  next();
+})
 
 // Set view engine to Jade
 app.set('view engine', 'jade');
 app.set('views', __dirname + '/views');
+
+// Server running
+app.listen(3000, function(){
+	console.log("The frontend server is running on port 3000...");
+});
+
+//------------------------------------- Router----------------------------------
 
 // Home route
 app.get('/', function(req, res){
@@ -91,11 +111,61 @@ app.get('/contact', function(req, res){
 	res.render("contact");
 });
 
-//Accessing the restricted API routes
-app.all('/api', function(req, res, next){
-  console.log('Accessing admin area...');
-  next(); //pass control to the next handler
+// Login route
+app.get('/login', function(req, res){
+	res.render("./admin/login");
+});
 
+// Login submit route
+app.post('/login', function(req, res){
+  authenticate(req.body.username, req.body.password, function(err, user){
+  	if (user) {
+  		console.log('authenticate')
+  		req.session.regenerate(function(){
+  			req.session.user = user;
+  			res.redirect('/api/projects');
+  		});
+  	} else {
+  		console.log('wrong!')
+  		res.redirect('/login');
+  	}
+	});
+});
+
+// Logout route
+app.get('/logout', function(req, res){
+	// destroy the user's session to log them out
+	// will be re-created next request
+	req.session.destroy(function(){
+		res.redirect('/login');
+	});
+});
+
+// Authenticate user & password
+function authenticate(name, pass, fn) {
+  connection.query('SELECT * FROM users WHERE username=?', [name], function(err, rows){
+    let user = rows[0];
+    if (!user) return fn(new Error('cannot find user'));
+    bcrypt.compare(pass, user.hash, function(err, res) {
+      if (err) return fn(err);
+      if (res) {
+        return fn(null, user);
+      } else {
+        fn(new Error('invalid password'));
+      }
+    });
+  });
+}
+
+// Enter API route
+app.all('/api/*', function(req, res, next){
+  console.log('Accessing admin area...');
+  if (req.session.user) {
+		next();
+	} else {
+		req.session.error = 'Access denied!';
+		res.redirect('/login');
+	}
 });
 
 // API projectlist route
@@ -192,7 +262,6 @@ app.get('/api/projects/delete/:id', function(req, res){
   res.redirect('/api/projects');
 });
 
-
 function showAllProjects(res) {
   var queryAllProjects = 'SELECT *, projects.id AS projectId FROM projects JOIN images ON projects.id = images.projectId WHERE main = 1';
   connection.query(queryAllProjects, function(err, rows){
@@ -207,8 +276,3 @@ function getCategories(){
   });
   return result;
 }
-
-// Server running
-app.listen(3000, function(){
-	console.log("The frontend server is running on port 3000...");
-});
